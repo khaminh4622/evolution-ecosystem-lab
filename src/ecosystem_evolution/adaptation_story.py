@@ -17,14 +17,19 @@ def show_adaptation_story(
     runs: int = 60,
     generations: int = 40,
     include_lineage: bool = True,
+    start_size: int = 30,
 ) -> None:
     """Run many seeds, then walk through one typical surviving run in detail.
 
     The printout has two sections: a population table (population size, mean
     trait match, mean traits per generation) and the lineage report for one
     founder. Set ``include_lineage`` to False to print the table alone.
+
+    ``start_size`` exists because a habitat can only hold so many foxes:
+    starting far more than the carrying capacity kills every fox in the first
+    generation, and the table alone cannot explain why.
     """
-    spec = InitialPopulationSpec(size=30, trait_mean=0.5, trait_variation=0.18)
+    spec = InitialPopulationSpec(size=start_size, trait_mean=0.5, trait_variation=0.18)
 
     def simulator(seed: int) -> EvolutionSimulator:
         return EvolutionSimulator(

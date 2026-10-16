@@ -29,7 +29,13 @@ def _stub_place(name: str, weather: WeatherObservation):
     return fake_environment_for_place
 
 
-def test_world_location_example_prints_the_population_table(capsys, monkeypatch) -> None:
+def test_world_location_example_reports_the_honest_outcome(capsys, monkeypatch) -> None:
+    """The shipped scenario is deliberately unsurvivable, and says why.
+
+    Phoenix in July is dry enough that the derived water keeps no foxes alive,
+    so the example must report the extinction and explain it rather than
+    inflating the resources to force a survivors' table.
+    """
     weather = WeatherObservation(31.1, 0.12, 0.0, 0.04, "2026-07-15T12:00")
     monkeypatch.setattr(
         world_location_example,
@@ -42,14 +48,22 @@ def test_world_location_example_prints_the_population_table(capsys, monkeypatch)
 
     assert "Map selection: Phoenix, United States" in output
     assert "Weather at selection: 31.1 C" in output
-    # The shipped scenario must be survivable, otherwise the example stops
-    # before the table and prints the extinction line instead.
-    assert "trait match" in output
-    assert "Traits this place favors:" in output
-    assert "One line of descent" not in output
+    # Resources are derived from the real weather, not overridden.
+    assert "Derived from that weather: water 0.11" in output
+    assert "0 of 60 runs survived" in output
+    assert "Why no foxes were left" in output
 
 
-def test_capacity_check_warns_about_over_capacity_starts(monkeypatch) -> None:
+def test_derived_resources_are_not_inflated() -> None:
+    """No resource override, so a dry place stays dry."""
+    import inspect
+
+    source = inspect.getsource(world_location_example.build_environment)
+    assert "water_availability" not in source
+    assert "food_availability" not in source
+
+
+def test_capacity_check_reports_the_habitat_limit(monkeypatch) -> None:
     weather = WeatherObservation(40.0, 0.05, 0.0, 0.02, "2026-07-15T12:00")
     stub = _stub_place("Dry place", weather)
     monkeypatch.setattr(
@@ -68,7 +82,7 @@ def test_capacity_check_warns_about_over_capacity_starts(monkeypatch) -> None:
     report = world_location_example.check_capacity()
 
     assert "carrying capacity" in report
-    assert "over capacity" in report
+    assert "derived water" in report
 
 
 def test_capacity_check_is_quiet_when_the_habitat_is_large_enough(monkeypatch) -> None:
