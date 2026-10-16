@@ -153,6 +153,13 @@ Train the models and print held-out scores:
 python -m ecosystem_evolution.ml_train_example
 ```
 
+Walk through the whole pipeline step by step, including one prediction on a
+scenario the model never saw:
+
+```powershell
+python -m ecosystem_evolution.ml_walkthrough_example
+```
+
 **What these models are worth.** Three things must be said plainly:
 
 1. **The labels come from this simulator, not from nature.** The simulator's rules
