@@ -202,3 +202,9 @@ The equations, constraints, and planned Unity/API contract are in [docs/simulati
 ## Scientific scope
 
 The simulator is a transparent teaching model, not a validated model of real fox ecology. Any ML model trained from its experiments predicts **this simulator's outcomes**. It must be presented separately from real biological evidence.
+
+A worked example: an honest Sonoran desert (rainfall 0.12, humidity 0.18) supports **no** red fox population at any starting size or habitat area tested, because the derived water availability is 0.12. That result is the model's honest answer rather than a misconfiguration — a red fox is a temperate generalist that needs regular water. Raising the water to make the scenario survivable describes a different place (an oasis), and the examples label it that way.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
