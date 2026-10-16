@@ -96,9 +96,10 @@ descent to a living fox):
 python -m ecosystem_evolution.lineage_example
 ```
 
-Watch red foxes adapt to a 30 C desert and grow back to capacity (population,
-trait match to the weather, and a line of descent). The built-in desert preset is
-too scarce for any run to survive, so this example adds food and water:
+Watch red foxes in hot, dry country. The example prints two scenarios: the open
+Sonoran desert, where no population persists because the climate leaves almost
+no water, and a watered oasis at the same temperature, where foxes survive and
+adapt to the heat:
 
 ```powershell
 python -m ecosystem_evolution.desert_example
