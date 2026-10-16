@@ -132,6 +132,47 @@ final population's ancestry, and one line of descent from a founder to a living 
 The model has no juvenile stage. A newborn joins the population immediately and can
 become a parent only after surviving one generation's selection step.
 
+## Machine learning (experimental)
+
+`ecosystem_evolution.ml` turns simulated experiments into a dataset and trains
+four teaching models on it. Install the extra first:
+
+```powershell
+pip install -e ".[ml]"
+```
+
+See what a dataset contains:
+
+```powershell
+python -m ecosystem_evolution.ml_dataset_example
+```
+
+Train the models and print held-out scores:
+
+```powershell
+python -m ecosystem_evolution.ml_train_example
+```
+
+**What these models are worth.** Three things must be said plainly:
+
+1. **The labels come from this simulator, not from nature.** The simulator's rules
+   are hand-written formulas chosen for teaching, so a model that predicts them
+   well has demonstrated a working pipeline, not discovered biology.
+2. **The population regressor's R2 is unstable and should not be quoted alone.**
+   About 30% of scenarios collapse to zero while a few grow large, so five rows of
+   a 250-scenario dataset can hold ~87% of the label's variance. Report mean
+   absolute error instead.
+3. **The most trustworthy task is the extinction classifier** (ROC-AUC ~0.78
+   against a base rate of ~0.31), because its outcome is balanced enough to score
+   honestly and it answers the question a student actually asks.
+
+Splits are always made on `scenario_id`. Every row of a scenario shares one
+environment, so a row-wise split would leak and report a score the model has not
+earned; `tests/test_ml_models.py` demonstrates that gap directly.
+
+Any model trained here predicts **this simulator's outcomes** and must be
+presented separately from real biological evidence.
+
 ## Architecture
 
 | Area | Location | Responsibility |
@@ -144,7 +185,7 @@ become a parent only after surviving one generation's selection step.
 | Evolution simulation | `src/ecosystem_evolution/simulation.py` | Selection, reproduction, capacity, replay |
 | Lineage & life histories | `src/ecosystem_evolution/lineage.py` | Parents, children, founder shares and lines of descent from a finished run |
 | Data logging | `src/ecosystem_evolution/logging.py` | Experiment records, JSON and tabular rows |
-| ML (next phase) | `src/ecosystem_evolution/ml/` | Dataset generation, model training, inference |
+| ML (experimental) | `src/ecosystem_evolution/ml/` | Dataset generation from simulated scenarios, grouped splits, and four teaching models |
 | API (next phase) | `src/ecosystem_evolution/api/` | Unity/Python request boundary |
 | Unity presentation | `unity/Assets/Scripts/` | Rendering, UI, replay controls; never fitness logic |
 
