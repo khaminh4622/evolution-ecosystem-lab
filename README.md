@@ -96,13 +96,13 @@ descent to a living fox):
 python -m ecosystem_evolution.lineage_example
 ```
 
-Watch red foxes in hot, dry country. The example prints two scenarios: the open
-Sonoran desert, where no population persists because the climate leaves almost
-no water, and a watered oasis at the same temperature, where foxes survive and
-adapt to the heat:
+Watch red foxes in hot, dry country. Choose one place per run: a watered oasis
+(the default), where foxes survive and adapt to the heat, or the open Sonoran
+desert, where no population persists because the climate leaves almost no water:
 
 ```powershell
-python -m ecosystem_evolution.desert_example
+python -m ecosystem_evolution.desert_example              # oasis
+python -m ecosystem_evolution.desert_example --desert     # open desert
 ```
 
 Do the same in a 0 C winter forest (cold pushes fur insulation up):

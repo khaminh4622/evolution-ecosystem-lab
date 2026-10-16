@@ -1,13 +1,12 @@
-"""Red foxes in hot, dry country: open desert fails, a watered oasis works.
+"""Red foxes in hot, dry country: choose the open desert or a watered oasis.
 
-This example shows both halves of the same lesson, because the honest answer is
-not "add water until the foxes survive".
+One place per run. Nothing is printed that you did not ask for.
 
 **Open desert.** The Sonoran preset is 38 C with rainfall 0.12 and humidity 0.18.
 Water availability follows from those measurements, and at that level a red fox
-population does not persist at any size or habitat area tested. A red fox is a
-temperate generalist that needs regular water, so treating a real desert as a
-place it can colonise would be wishful thinking.
+population does not persist at any starting size or habitat area tested. A red
+fox is a temperate generalist that needs regular water, so treating a real
+desert as a place it can colonise would be wishful thinking.
 
 **Oasis.** A river valley, irrigated farmland, or a spring-fed corridor is a
 genuinely different habitat, and the difference is measurable: rainfall and
@@ -18,7 +17,7 @@ Published earlier versions of this example declared desert rainfall (0.12) and
 desert humidity (0.18) while claiming water availability 0.75, which is wetter
 than the forest examples use. Those three fields cannot all be true of one
 place, so the scenario was internally inconsistent. This version keeps them
-consistent and labels each scenario for what it is.
+consistent and shows one place at a time.
 """
 
 from __future__ import annotations
@@ -29,6 +28,13 @@ from .adaptation_story import show_adaptation_story
 from .environment import Season
 from .locations import environment_for_location
 from .simulation import EvolutionSimulator, InitialPopulationSpec, SimulationConfig
+
+# Open desert, exactly as the preset describes it. No resource is inflated.
+OPEN_DESERT = dict(
+    temperature_c=30.0,
+    season=Season.SUMMER,
+    habitat_area_km2=3.0,
+)
 
 # A watered corridor in hot country: rainfall and humidity travel with the
 # water value, so the climate described is one real place rather than a mix.
@@ -45,51 +51,57 @@ OASIS = dict(
     habitat_area_km2=3.0,
 )
 
-# Open desert, exactly as the preset describes it. No resource is inflated.
-OPEN_DESERT = dict(
-    temperature_c=30.0,
-    season=Season.SUMMER,
-    habitat_area_km2=3.0,
-)
+PLACES = {
+    "desert": ("Sonoran open desert at 30 C", OPEN_DESERT),
+    "oasis": ("Oasis at 30 C", OASIS),
+}
 
 
-def describe_open_desert() -> None:
+def show_open_desert(runs: int = 60, generations: int = 30) -> None:
     """Report what the open desert does, without dressing it up."""
     environment = environment_for_location("sonoran_desert", **OPEN_DESERT)
-    simulator = EvolutionSimulator(environment, SimulationConfig(generations=30))
     spec = InitialPopulationSpec(size=30, trait_mean=0.5, trait_variation=0.18)
-    survived = 0
-    for seed in range(60):
-        result = EvolutionSimulator(
+    survived = sum(
+        EvolutionSimulator(
             environment,
-            SimulationConfig(generations=30, seed=seed, mutation_probability=0.10),
-        ).run(spec)
-        survived += result.final_population > 0
+            SimulationConfig(generations=generations, seed=seed, mutation_probability=0.10),
+        ).run(spec).final_population
+        > 0
+        for seed in range(runs)
+    )
 
-    print("Open Sonoran desert, unchanged preset")
+    print("Sonoran open desert at 30 C")
     print(
         f"  rainfall {environment.rainfall:.2f}, humidity {environment.humidity:.2f} "
         f"-> water availability {environment.water_availability:.2f}"
     )
-    print(f"  {survived} of 60 runs survived 30 generations")
+    print(f"  {survived} of {runs} runs survived {generations} generations")
     print("  A red fox needs regular water, so this habitat supports no population")
     print("  at any starting size or area tested. That is the model's answer, not a")
     print("  missing setting: the water value follows from the climate above.")
-    print()
 
 
-def main(include_lineage: bool = True) -> None:
-    describe_open_desert()
-    oasis = environment_for_location("sonoran_desert", **OASIS)
-    print("The same hot country, at a watered oasis or irrigated corridor")
-    print(
-        f"  rainfall {oasis.rainfall:.2f}, humidity {oasis.humidity:.2f} "
-        f"-> water availability {oasis.water_availability:.2f}"
-    )
+def main(place: str = "oasis", include_lineage: bool = True) -> None:
+    """Show one place: ``desert`` or ``oasis``."""
+    if place not in PLACES:
+        raise ValueError(f"unknown place {place!r}; choose one of {sorted(PLACES)}")
+    title, overrides = PLACES[place]
+
+    if place == "desert":
+        show_open_desert(runs=60, generations=30)
+        return
+
+    environment = environment_for_location("sonoran_desert", **overrides)
+    print(f"{title}: rainfall {environment.rainfall:.2f}, "
+          f"humidity {environment.humidity:.2f}, "
+          f"water {environment.water_availability:.2f}")
     print()
-    show_adaptation_story("Oasis at 30 C", oasis, include_lineage=include_lineage)
+    show_adaptation_story(title, environment, include_lineage=include_lineage)
 
 
 if __name__ == "__main__":
-    # --no-lineage prints the population table only.
-    main(include_lineage="--no-lineage" not in sys.argv[1:])
+    # --desert or --oasis picks one place (default oasis); --no-lineage prints
+    # the population table only.
+    arguments = sys.argv[1:]
+    chosen = "desert" if "--desert" in arguments else "oasis"
+    main(place=chosen, include_lineage="--no-lineage" not in arguments)
